@@ -20,11 +20,31 @@ var Car = Vehicle.extend({
     }
 });
 
-var honda = new Car({registrationNumber: "XLI887", color: "Blue"});
+var Vehicles = Backbone.Collection.extend({
+    model: Vehicle
+});
 
-if (!honda.isValid()){
-    console.log("Your car needs to be registered.");
-} else {
-    console.log("Your car is registered.");
-}
+var hondas = new Vehicles([
+    new Vehicle({ registrationNumber: "XLI887", color: "Blue"}),
+    new Vehicle({ registrationNumber: "ZNP123", color: "Blue"}),
+    new Vehicle({ registrationNumber: "XUV456", color: "Gray"})
+]);
+
+var blueHondas = hondas.where({ color: "Blue"});
+
+var myHonda = hondas.where({ registrationNumber: "XLI887"});
+
+console.log("Blue Hondas", blueHondas);
+
+console.log("My Honda", myHonda);
+
+console.log(hondas);
+
+hondas.remove(myHonda);
+
+hondas.each(function(honda){
+    console.log(honda);
+});
+
+
 
