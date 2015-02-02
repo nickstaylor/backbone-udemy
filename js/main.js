@@ -4,7 +4,6 @@
 // files and modules.
 
 var Vehicle = Backbone.Model.extend({
-    urlRoot: "/api/vehicles",
     validate: function(attrs){
         if (!attrs.registrationNumber)
             return "Registration number is required."
@@ -14,37 +13,68 @@ var Vehicle = Backbone.Model.extend({
     }
 });
 
-var Car = Vehicle.extend({
-    start: function(){
-        console.log("Car with registration number " + this.get("registrationNumber") + " started");
-    }
-});
-
 var Vehicles = Backbone.Collection.extend({
     model: Vehicle
 });
 
+var VehicleView = Backbone.View.extend({
+    tagName: "li",
+    className: "vehicle",
+
+    events: {
+        "click .deleteVehicle": "onDeleteVehicle"
+    },
+
+    initialize: function(){
+        this.model.on("remove", this.onDeleteVehicle, this);
+    },
+
+    onDeleteVehicle: function(vehicle){
+        var id = this.$el.attr("id");
+        hondas.remove(hondas.get({id: id}));
+        this.$el.remove();
+    },
+
+    render: function(){
+        this.$el.html(this.model.get("vehicleModel") + " " + this.model.get("registrationNumber") + " <button class='deleteVehicle'>Delete</button>");
+        this.$el.attr("id", this.model.id);
+
+        return this;
+    }
+});
+
+var VehiclesView = Backbone.View.extend({
+    tagName: "ul",
+
+    initialize: function(){
+        this.model.on("add", this.onAddVehicle, this);
+    },
+
+    onAddVehicle: function(vehicle){
+        var vehicleView = new VehicleView({ model: vehicle });
+
+        this.$el.append(vehicleView.render().$el);
+    },
+
+    render: function(){
+        var self = this;
+
+        this.model.each(function(vehicle){
+            var vehicleView = new VehicleView({ model: vehicle });
+            self.$el.append(vehicleView.render().$el);
+        });
+    }
+});
+
 var hondas = new Vehicles([
-    new Vehicle({ registrationNumber: "XLI887", color: "Blue"}),
-    new Vehicle({ registrationNumber: "ZNP123", color: "Blue"}),
-    new Vehicle({ registrationNumber: "XUV456", color: "Gray"})
+    new Vehicle({ id: 1, vehicleMake: "Honda", vehicleModel: "Accord", registrationNumber: "XLI887", color: "Blue"}),
+    new Vehicle({ id: 2, vehicleMake: "Honda", vehicleModel: "Civic", registrationNumber: "ZNP123", color: "Blue"}),
+    new Vehicle({ id: 3, vehicleMake: "Honda", vehicleModel: "CRV", registrationNumber: "XUV456", color: "Gray"})
 ]);
 
-var blueHondas = hondas.where({ color: "Blue"});
+var vehiclesView = new VehiclesView({ el: "#vehicleTemplate", model: hondas });
+vehiclesView.render();
 
-var myHonda = hondas.where({ registrationNumber: "XLI887"});
-
-console.log("Blue Hondas", blueHondas);
-
-console.log("My Honda", myHonda);
-
-console.log(hondas);
-
-hondas.remove(myHonda);
-
-hondas.each(function(honda){
-    console.log(honda);
-});
 
 
 
